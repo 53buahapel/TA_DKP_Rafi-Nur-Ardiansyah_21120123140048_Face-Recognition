@@ -86,7 +86,7 @@ if __name__ == "__main__":
     # Define min window size to be recognized as a face
     minW = 0.1*cam.get(3)
     minH = 0.1*cam.get(4)
-    print(pyfiglet.figlet_format("gate enterance"))
+    print(pyfiglet.figlet_format("gate entrance"))
     with Halo(text='[+] Mengambil gambar', spinner='dots') as send:
         start(0)
 

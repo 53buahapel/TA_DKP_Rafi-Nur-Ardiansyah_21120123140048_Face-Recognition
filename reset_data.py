@@ -1,7 +1,7 @@
 import os
 import pyfiglet
 
-print(pyfiglet.figlet_format("gate enterance"))
+print(pyfiglet.figlet_format("gate entrance"))
 
 while True:
     answer = input('[?] are you sure want to reset all data? [y/N]')

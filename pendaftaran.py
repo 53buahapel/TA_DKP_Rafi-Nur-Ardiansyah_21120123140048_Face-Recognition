@@ -63,7 +63,7 @@ if __name__ == "__main__":
     face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
     path = 'dataset'
 
-    print(pyfiglet.figlet_format("gate enterance"))
+    print(pyfiglet.figlet_format("gate entrance"))
     while True:
         name = input('[?] Masukan nama anda: ')
         
