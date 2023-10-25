@@ -21,6 +21,7 @@ Catatan: Proyek dibuat yang merupakan versi pengembangan dari [Mjrovai](https://
 3. Install semua library yang diperlukan menggunakan pip
 
     `pip3 install -r requirements.txt`
+4. Buat folder bernama `dataset` dan `trainer`
 
 ## Usage
 
