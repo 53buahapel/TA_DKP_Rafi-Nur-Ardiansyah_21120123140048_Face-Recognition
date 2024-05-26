@@ -10,8 +10,9 @@ import threading
 class FaceRecognitionApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Face Recognition")
+        self.root.title("Registration")
         self.root.geometry("400x180")
+        self.root.iconbitmap('icon.ico')
 
         self.face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
         self.path = 'dataset'

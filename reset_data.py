@@ -8,6 +8,7 @@ class ResetDataApp:
         self.root = root
         self.root.title("Reset Data Confirmation")
         self.root.geometry("400x200")
+        self.root.iconbitmap('icon.ico')
 
         self.create_widgets()
 

@@ -4,21 +4,22 @@ import os
 class Application:
     def __init__(self, root):
         self.root = root
-        self.root.title("Face Recognition")
+        self.root.title("Main Menu")
         self.root.geometry("480x360")
-        first_label = tk.Label(self.root, text="Face Recognition", font=10)
+        self.root.iconbitmap('icon.ico')
+
+        first_label = tk.Label(self.root, text="Face Recognition App", font=10)
         first_label.pack(pady=2, padx=2)
 
         self.create_widgets()
 
     def create_widgets(self):
         button_style = {
-            'bg': 'white',
             'width': 20,
             'height': 2
         }
 
-        self.btn1 = tk.Button(self.root, text="Pendaftaran", command=self.launch_pendaftaran, **button_style)
+        self.btn1 = tk.Button(self.root, text="Registration", command=self.launch_pendaftaran, **button_style)
         self.btn1.pack(pady=5)
 
         self.btn2 = tk.Button(self.root, text="Start", command=self.start_py, **button_style)
