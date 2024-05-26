@@ -1,6 +1,6 @@
-# Gate Entrance Using Face
+# Face Recognition
 
-Proyek ini bertujuan untuk membuat sistem gerbang masuk yang menggunakan pengenalan wajah (*face recognition*) untuk memberikan akses kepada wajah yang dikenali/telah terdaftar.
+Proyek ini bertujuan untuk membuat sistem pengenalan wajah (*face recognition*) untuk memberikan akses kepada wajah yang dikenali/telah terdaftar.
 
 Catatan: Proyek dibuat yang merupakan versi pengembangan dari [Mjrovai](https://github.com/Mjrovai/OpenCV-Face-Recognition) project.
 

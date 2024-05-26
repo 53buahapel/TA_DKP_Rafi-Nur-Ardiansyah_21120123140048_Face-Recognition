@@ -1,90 +1,121 @@
+import tkinter as tk
+from tkinter import messagebox
 import cv2
-import pyfiglet
 import numpy as np
 from PIL import Image
 import os
 from halo import Halo
+import threading
 
-def create_dataset(count):
-    while(True):
+class FaceRecognitionApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Face Recognition")
+        self.root.geometry("400x180")
 
-        ret, img = cam.read()
+        self.face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+        self.path = 'dataset'
+        self.names = open('names.txt', 'r').read().split(',')
         
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = face_detector.detectMultiScale(gray, 1.3, 5)
+        self.create_widgets()
 
-        for (x,y,w,h) in faces:
+    def create_widgets(self):
+        self.title_label = tk.Label(self.root, text="Gate Entrance", font=("Helvetica", 16))
+        self.title_label.pack(pady=10)
 
-            cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0), 2)     
-            count += 1
+        self.name_label = tk.Label(self.root, text="Enter your name:")
+        self.name_label.pack(pady=5)
 
-            # Save the captured image into the datasets folder
-            cv2.imwrite("dataset/User." + str(face_id) + '.' + str(count) + ".jpg", gray[y:y+h,x:x+w])
+        self.name_entry = tk.Entry(self.root)
+        self.name_entry.pack(pady=5)
 
-            cv2.imshow('image', img)
+        self.start_button = tk.Button(self.root, text="Start", command=self.start_recognition)
+        self.start_button.pack(pady=20)
 
-        k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
-        if k == 27:
-            break
-        elif count >= 100:
-            break
-    cam.release()
-    cv2.destroyAllWindows()
-    send.info('[+] Sampel wajah anda telah diambil.')
-    send.succeed('[+] Pengambilan sampel wajah selesai.')
+        self.output_text = tk.Text(self.root, height=10, state='disabled')
+        self.output_text.pack(pady=10)
 
-# function to get the images and label data
-def getImagesAndLabels(path):
+    def start_recognition(self):
+        name = self.name_entry.get()
+        if not name:
+            messagebox.showerror("Input Error", "Please enter a name.")
+            return
 
-    imagePaths = [os.path.join(path,f) for f in os.listdir(path)]     
-    faceSamples=[]
-    ids = []
+        if name.lower() in [n.lower() for n in self.names]:
+            messagebox.showerror("Name Error", "Name already exists. Please enter a different name.")
+            return
 
-    for imagePath in imagePaths:
+        self.face_id = len(self.names)
+        self.output_text.configure(state='normal')
+        self.output_text.configure(state='disabled')
 
-        PIL_img = Image.open(imagePath).convert('L') # convert it to grayscale
-        img_numpy = np.array(PIL_img,'uint8')
+        # Start the dataset creation and training in a new thread to avoid freezing the GUI
+        threading.Thread(target=self.create_dataset_and_train, args=(name,)).start()
 
-        id = int(os.path.split(imagePath)[-1].split(".")[1])
-        faces = face_detector.detectMultiScale(img_numpy)
+    def create_dataset_and_train(self, name):
+        with Halo(text='[+] Pengambilan sampel, pastikan wajah anda terlihat pada kamera ...', spinner='dots') as send:
+            self.create_dataset(0)
+            send.succeed('[+] Pengambilan sampel wajah selesai.')
 
-        for (x,y,w,h) in faces:
-            faceSamples.append(img_numpy[y:y+h,x:x+w])
-            ids.append(id)
+        with Halo(text='[+] Training wajah anda. Mohon tunggu ...', spinner='dots') as send:
+            recognizer = cv2.face.LBPHFaceRecognizer_create()
+            faces, ids = self.getImagesAndLabels(self.path)
+            recognizer.train(faces, np.array(ids))
 
-    return faceSamples,ids
+            # Save the model into trainer/trainer.yml
+            recognizer.write('trainer/trainer.yml')
+            send.succeed("[+] {0} wajah telah ter training.".format(len(np.unique(ids))))
 
-if __name__ == "__main__":
+        open('names.txt', 'a').write(',{0}'.format(name))
+        self.names.append(name)
+        self.output_text.configure(state='normal')
+        self.output_text.insert(tk.END, f"Training completed for {name}\n")
+        self.output_text.configure(state='disabled')
+        messagebox.showinfo("Success", "Training completed successfully.")
 
-    names = open('names.txt', 'r').read().split(',')
-    cam = cv2.VideoCapture(0)
-    cam.set(3, 640) # set video width
-    cam.set(4, 480) # set video height
-    face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-    path = 'dataset'
+    def create_dataset(self, count):
+        cam = cv2.VideoCapture(0)
+        cam.set(3, 640)  # set video width
+        cam.set(4, 480)  # set video height
 
-    print(pyfiglet.figlet_format("gate entrance"))
-    while True:
-        name = input('[?] Masukan nama anda: ')
-        
-        if name.lower() in [n.lower() for n in names]:
-            print("Nama sudah ada dalam daftar. Silakan masukkan nama lain.")
-        else:
-            break
+        while True:
+            ret, img = cam.read()
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            faces = self.face_detector.detectMultiScale(gray, 1.3, 5)
 
-    face_id = len(names)
+            for (x, y, w, h) in faces:
+                cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+                count += 1
+                cv2.imwrite("dataset/User." + str(self.face_id) + '.' + str(count) + ".jpg", gray[y:y + h, x:x + w])
+                cv2.imshow('image', img)
 
-    with Halo(text='[+] Pengambilan sampel, pastikan wajah anda terlihat pada kamera ...', spinner='dots') as send:
-        create_dataset(0)
+            k = cv2.waitKey(100) & 0xff  # Press 'ESC' for exiting video
+            if k == 27:
+                break
+            elif count >= 100:
+                break
 
-    with Halo(text='[+] Training wajah anda. Mohon tunggu ...', spinner='dots') as send:
-        recognizer = cv2.face.LBPHFaceRecognizer_create()
-        faces,ids = getImagesAndLabels(path)
-        recognizer.train(faces, np.array(ids))
+        cam.release()
+        cv2.destroyAllWindows()
 
-        # Save the model into trainer/trainer.yml
-        recognizer.write('trainer/trainer.yml') # recognizer.save() worked on Mac, but not on Pi
-        send.succeed("[+] {0} wajah telah ter training.".format(len(np.unique(ids))))
-    open('names.txt', 'a').write(',{0}'.format(name))
-    
-    
+    def getImagesAndLabels(self, path):
+        imagePaths = [os.path.join(path, f) for f in os.listdir(path)]
+        faceSamples = []
+        ids = []
+
+        for imagePath in imagePaths:
+            PIL_img = Image.open(imagePath).convert('L')  # convert it to grayscale
+            img_numpy = np.array(PIL_img, 'uint8')
+            id = int(os.path.split(imagePath)[-1].split(".")[1])
+            faces = self.face_detector.detectMultiScale(img_numpy)
+
+            for (x, y, w, h) in faces:
+                faceSamples.append(img_numpy[y:y + h, x:x + w])
+                ids.append(id)
+
+        return faceSamples, ids
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    app = FaceRecognitionApp(root)
+    root.mainloop()

@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-import pyfiglet
-import time
 from halo import Halo
 import numpy as np
 
@@ -33,21 +31,8 @@ def start(counter):
                 else:
                     id = "unknown"
                     confidence = "  {0}%".format(round(100 - confidence))
-
-                if counter == 100:
-                    cv2.destroyAllWindows()
-                    cv2.putText(blank, "[+] Gate terbuka, silahkan masuk ", (20,240), font, 1, (255,255,255), 2)
-                    send.info("[+] Gate terbuka, silahkan masuk")
-                    cv2.imshow('gate', blank)
-                    k = cv2.waitKey(10) & 0xff # Press 'ESC' for exiting video
-                    if k == 27:
-                        break
-                    time.sleep(5)
-                    send.fail("[+] Gate tertutup")
-                    cv2.destroyAllWindows()
-                    counter = 0
                 
-                cv2.putText(img, "Tahan wajah anda di depan kamera " + str((100-counter)//5), (5,25), font, 1, (255,255,255), 2)
+                cv2.putText(img, "Tekan esc untuk keluar", (5,25), font, 1, (255,255,255), 2)
                 cv2.putText(img, str(id), (x+5,y-5), font, 1, (255,255,255), 2)
                 cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0), 1)  
             
@@ -61,7 +46,6 @@ def start(counter):
         cam.release()
         cv2.destroyAllWindows()
         exit()
-
 
 
 if __name__ == "__main__":
@@ -86,13 +70,9 @@ if __name__ == "__main__":
     # Define min window size to be recognized as a face
     minW = 0.1*cam.get(3)
     minH = 0.1*cam.get(4)
-    print(pyfiglet.figlet_format("gate entrance"))
     with Halo(text='[+] Mengambil gambar', spinner='dots') as send:
         start(0)
 
     # Do a bit of cleanup
     cam.release()
     cv2.destroyAllWindows()
-
-
-
